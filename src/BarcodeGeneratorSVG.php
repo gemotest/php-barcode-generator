@@ -14,6 +14,7 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
      * @param $pLName (string) фамилия пациента.
      * @param $pFName (string) имя-отчество пациента.
      * @param $footer (string)
+     * @param $print_button (string) название кнопки печати
      * @return string SVG code.
      * @public
      */
@@ -24,12 +25,14 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
         $color = 'black',
         $pLName = "",
         $pFName = "",
-        $footer
+        $footer,
+        $print_button = "print"
     )
     {
         $repstr = array("\0" => '', '&' => '&amp;', '<' => '&lt;', '>' => '&gt;');
 
         $svg = '<html><head>';
+        $svg .= '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
         $svg .= '<link rel="stylesheet" href="/../../fonts/gemotest_icons/gemo-font.css" type="text/css"/>';
         $svg .= '<style>
             @media print { 
@@ -38,11 +41,18 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
                   margin: 0;
                 }
                 div.break {page-break-after: always;}
+                div.no_print {
+                    display: none;
+                } 
             }
             body {
-            margin-top:0;
-            padding-top:0;
+                margin-top:0;
+                padding-top:0;
             }
+            div.no_print {
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }             
             .txt {
                 font-size:6pt; 
                 font-family:Arial; 
@@ -57,8 +67,19 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
                 position: relative;
                 padding-top: 5pt;
             }
+            a.print_btn {
+                color: #fff;
+                font-family:Arial;
+                font-size:12px;
+                background-color: #1E8036;
+                border-radius: 3px;
+                padding: 7px 20px;
+                width: auto;
+                height: auto;
+            }
          </style>';
         $svg .= '</head><body>' . "\n";
+        $svg .= '<div class="no_print"><a class="print_btn" href="#" onclick="print()">' . $print_button . '</a></div>';
 
         foreach($barcode_data as $barcode_element)
         {
@@ -94,11 +115,13 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
                 $positionHorizontal += $barWidth;
             }
 
+            $footer = strlen($footer) < 30 ? $footer : substr($footer,0,30);
+            $serv_name = strlen($barcode_element['serv_name']) < 25 ? $barcode_element['serv_name'] : substr($barcode_element['serv_name'],0,25);
             $svg .= "\t" . '</g>' . "\n";
             $svg .= '</svg>' . "\n";
             $svg .= '</td></tr>';
             $svg .= '<tr><td class="txt" style="padding-top: 2pt">' . $barcode_element['order_num'] . '</td></tr>';
-            $svg .= '<tr><td class="txt">' . $barcode_element['serv_name'] . '</td></tr>';
+            $svg .= '<tr><td class="txt"><nobr>' . $serv_name . '</nobr></td></tr>';
             $svg .= '<tr><td class="footer" style="padding-top: 2pt"><nobr>' . $footer . '</nobr></td></tr>';
             $svg .= '</table>';
             $svg .= '</div><div class="break"></div>';
