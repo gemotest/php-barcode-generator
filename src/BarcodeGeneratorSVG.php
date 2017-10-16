@@ -83,48 +83,50 @@ class BarcodeGeneratorSVG extends BarcodeGenerator
 
         foreach($barcode_data as $barcode_element)
         {
-            $barcodeData = $this->getBarcodeData($barcode_element['code'], $type);
+            for ($i = 0; $i < $barcode_element['kol']; $i++) {
+                $barcodeData = $this->getBarcodeData($barcode_element['code'], $type);
 
-            // определяем отступ слева в зависимости от количества символов в пиктограмме
-            $x = strlen($barcode_element['icon']) > 1 ? 23 : 26;
-            $icon = str_replace("/", "<span style='font-size:14pt;'>/</span>", $barcode_element['icon']);
+                // определяем отступ слева в зависимости от количества символов в пиктограмме
+                $x = strlen($barcode_element['icon']) > 1 ? 23 : 26;
+                $icon = str_replace("/", "<span style='font-size:14pt;'>/</span>", $barcode_element['icon']);
 
-            $svg .= '<div class="new_page">';
-            $svg .= '<div style="position:absolute; left: ' . $x . 'mm; top: 1mm; font-family: gemotest_fontregular; font-size: 25pt">' . $icon . '</div>';
-            $svg .= '<table cellspacing="0" cellpadding="0">';
-            $svg .= '<tr><td class="txt">' . $pLName . '</td></tr>';
-            $svg .= '<tr><td class="txt" style="padding-bottom: 2pt">' . $pFName . '</td></tr>';
-            $svg .= '<tr><td style="padding-left:12pt">';
-            $svg .= '<svg width="20mm" height="7.5mm" version="1.1" xmlns="http://www.w3.org/2000/svg"  viewBox="30 30 20 30">' . "\n";
-            $svg .= "\t" . '<desc>' . strtr($barcodeData['code'], $repstr) . '</desc>' . "\n";
-            $svg .= "\t" . '<g id="bars" fill="' . $color . '" stroke="none" vector-effect="non-scaling-stroke">' . "\n";
-            $positionHorizontal = 0;
+                $svg .= '<div class="new_page">';
+                $svg .= '<div style="position:absolute; left: ' . $x . 'mm; top: 1mm; font-family: gemotest_fontregular; font-size: 25pt">' . $icon . '</div>';
+                $svg .= '<table cellspacing="0" cellpadding="0">';
+                $svg .= '<tr><td class="txt">' . $pLName . '</td></tr>';
+                $svg .= '<tr><td class="txt" style="padding-bottom: 2pt">' . $pFName . '</td></tr>';
+                $svg .= '<tr><td style="padding-left:12pt">';
+                $svg .= '<svg width="20mm" height="7.5mm" version="1.1" xmlns="http://www.w3.org/2000/svg"  viewBox="30 30 20 30">' . "\n";
+                $svg .= "\t" . '<desc>' . strtr($barcodeData['code'], $repstr) . '</desc>' . "\n";
+                $svg .= "\t" . '<g id="bars" fill="' . $color . '" stroke="none" vector-effect="non-scaling-stroke">' . "\n";
+                $positionHorizontal = 0;
 
-            foreach ($barcodeData['bars'] as $bar) {
-                $barWidth = round(($bar['width'] - 0.01), 3);
-                $barHeight = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 3);
+                foreach ($barcodeData['bars'] as $bar) {
+                    $barWidth = round(($bar['width'] - 0.01), 3);
+                    $barHeight = round(($bar['height'] * $totalHeight / $barcodeData['maxHeight']), 3);
 
-                if ($bar['drawBar']) {
-                    $positionVertical = round(($bar['positionVertical'] * $totalHeight / $barcodeData['maxHeight']), 3);
-                    $svg .= "\t\t" . '<rect x="' . $positionHorizontal . '" y="' . $positionVertical . '" width="' . $barWidth . '" height="' . $barHeight . '" 
+                    if ($bar['drawBar']) {
+                        $positionVertical = round(($bar['positionVertical'] * $totalHeight / $barcodeData['maxHeight']), 3);
+                        $svg .= "\t\t" . '<rect x="' . $positionHorizontal . '" y="' . $positionVertical . '" width="' . $barWidth . '" height="' . $barHeight . '" 
                 stroke="white" 
                 stroke-width="0" 
                 vector-effect="non-scaling-stroke"/>' . "\n";
+                    }
+
+                    $positionHorizontal += $barWidth;
                 }
 
-                $positionHorizontal += $barWidth;
+                $footer = strlen($footer) < 30 ? $footer : substr($footer, 0, 30);
+                $serv_name = strlen($barcode_element['serv_name']) < 25 ? $barcode_element['serv_name'] : substr($barcode_element['serv_name'], 0, 25);
+                $svg .= "\t" . '</g>' . "\n";
+                $svg .= '</svg>' . "\n";
+                $svg .= '</td></tr>';
+                $svg .= '<tr><td class="txt" style="padding-top: 2pt">' . $barcode_element['order_num'] . '</td></tr>';
+                $svg .= '<tr><td class="txt"><nobr>' . $serv_name . '</nobr></td></tr>';
+                $svg .= '<tr><td class="footer" style="padding-top: 2pt"><nobr>' . $footer . '</nobr></td></tr>';
+                $svg .= '</table>';
+                $svg .= '</div><div class="break"></div>';
             }
-
-            $footer = strlen($footer) < 30 ? $footer : substr($footer,0,30);
-            $serv_name = strlen($barcode_element['serv_name']) < 25 ? $barcode_element['serv_name'] : substr($barcode_element['serv_name'],0,25);
-            $svg .= "\t" . '</g>' . "\n";
-            $svg .= '</svg>' . "\n";
-            $svg .= '</td></tr>';
-            $svg .= '<tr><td class="txt" style="padding-top: 2pt">' . $barcode_element['order_num'] . '</td></tr>';
-            $svg .= '<tr><td class="txt"><nobr>' . $serv_name . '</nobr></td></tr>';
-            $svg .= '<tr><td class="footer" style="padding-top: 2pt"><nobr>' . $footer . '</nobr></td></tr>';
-            $svg .= '</table>';
-            $svg .= '</div><div class="break"></div>';
         }
 
         $svg .= '</body></html>';
